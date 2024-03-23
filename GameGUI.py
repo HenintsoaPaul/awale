@@ -49,11 +49,13 @@ class GameGUI:
                 self.game.move(side, id_box)
                 print("player move => ", id_box)
                 self.update_buttons()
+                self.check_game_over()
 
                 self.current_turn = "ai"  # Switch to AI's turn
                 self.game.move_ai()  # AI makes its move
                 print("ai move => ", id_box)
                 self.update_buttons()
+                self.check_game_over()
 
                 self.current_turn = "player"  # Switch back to player's turn
                 self.nb_turn += 1
@@ -66,19 +68,12 @@ class GameGUI:
                 box = self.game._ai_boxes[id_box] if side == 0 else self.game._player_boxes[id_box]
                 self.buttons[side][id_box].config(text=str(box.get_item()), state=tk.DISABLED if side == 0 else tk.NORMAL)
                 self.labels[side][id_box].config(text=str(id_box))  # Update the label with the box id
-
-                # Adjust the order of the boxes based on the box order
-                if box.get_degree() == 1:
-                    self.buttons[side][id_box].lower()  # Move the box behind other boxes
-                else:
-                    self.buttons[side][id_box].lift()  # Move the box in front of other boxes
-
+    
     def run(self):
-        self.check_game_over()
         self.window.mainloop()
 
     def check_game_over(self):
-        if self.game.check_game_over():
+        if self.game.is_game_over:
             winner = self.game.get_winner()
             messagebox.showinfo("Game Over", f"The winner is {winner}!")
             self.window.quit()

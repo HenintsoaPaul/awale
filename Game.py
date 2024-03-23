@@ -11,10 +11,12 @@ class Game:
         self.winner = None
 
     def get_winner(self) -> str :
-        winner = "AI"
+        if self.winner == None:
+            return None
+        winner_name = "AI"
         if self.winner == 1:
-            winner = "Player"
-        return winner
+            winner_name = "Player"
+        return winner_name
 
     def get_nb_boxes_per_side( self ) -> int:
         return int( self._nb_boxes_per_side )
