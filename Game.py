@@ -27,7 +27,7 @@ class Game:
         # set ids and degrees
         degree = 0
         for i in range( self.get_nb_boxes_per_side() ):
-            if (i + 1) >= (self.get_nb_boxes_per_side() / 2):
+            if (i + 1) > (self.get_nb_boxes_per_side() / 2):
                 degree = 1
             ai_boxes.append( Box( i, degree ) )
             player_boxes.append( Box( i, degree ) )
