@@ -7,6 +7,14 @@ class Game:
         self._nb_boxes_per_side = 4
         self._ai_boxes = None
         self._player_boxes = None
+        self.is_game_over = False
+        self.winner = None
+
+    def get_winner(self) -> str :
+        winner = "AI"
+        if self.winner == 1:
+            winner = "Player"
+        return winner
 
     def get_nb_boxes_per_side( self ) -> int:
         return int( self._nb_boxes_per_side )
@@ -37,13 +45,27 @@ class Game:
         clone._player_boxes = deepcopy( self._player_boxes )
         return clone
 
-    def game_over( self ) -> bool:
+    def check_game_over( self ) -> bool:
+        is_game_over = False
+        max_items = 2 * 2 * self.get_nb_boxes_per_side()
+
+        items_in_ai_boxes = 0
+        items_in_player_boxes = 0
         for i in range( self.get_nb_boxes_per_side() ):
-            if self._ai_boxes[ i ].get_item() != 0 or self._player_boxes[ i ].get_item() != 0:
-                return False
-        return True
+            items_in_ai_boxes += self._ai_boxes[ i ].get_item()
+            items_in_player_boxes += self._player_boxes[ i ].get_item()
+
+        if items_in_ai_boxes == max_items or items_in_player_boxes == max_items:
+            is_game_over = True
+            self.winner = 1
+            if items_in_ai_boxes > items_in_player_boxes:
+                self.winner = 0
+                
+        self.is_game_over = is_game_over
+        return is_game_over
 
     def move( self, side: int, id_box: int, in_hand = 0 ):
+        # print ("side: ", side, "id_box: ", id_box, "in_hand: ", in_hand)
         # id_box [0;3]
         # side: 0 -> AI and 1 -> Player
         boxes = self._ai_boxes
@@ -89,9 +111,12 @@ class Game:
                         box_opponent_to_be_taken.set_item( 0 )
                         self.move( side, box.get_id_box(), in_hand )
 
+        # check if game is over
+        self.check_game_over()
+
     # returns the max/min score that can be got from a specific state
     def minimax( self, side: int, depth: int, toMaximize: bool ) -> int:
-        if depth == 0 or self.game_over():
+        if depth == 0 or self.is_game_over:
             return self.evaluate( side )
 
         if toMaximize:  # AI's turn
