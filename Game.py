@@ -155,7 +155,7 @@ class Game:
 
     # returns the best move for the AI
     def get_ai_move( self ) -> int:
-        depth = 10
+        depth = 5
         max_score = float( '-inf' )
         id_best_box = 0
         # explore all possible moves and get best move
@@ -167,8 +167,3 @@ class Game:
                 max_score = score
                 id_best_box = i
         return id_best_box
-    
-    # AI plays its best move
-    def move_ai( self ):
-        id_best_box = self.get_ai_move()
-        self.move( side=0, id_box=id_best_box )

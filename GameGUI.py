@@ -42,6 +42,10 @@ class GameGUI:
             self.buttons.append(row)
             self.labels.append(label_row)
 
+        # Add "Let AI move" button
+        self.ai_move_button = tk.Button(self.window, text="Let AI move", command=self.on_ai_move_button_click, state=tk.DISABLED)
+        self.ai_move_button.grid(row=2, column=0, columnspan=game._nb_boxes_per_side)
+
     def on_button_click(self, side, id_box):
         if self.current_turn == "player" and side == 1:  # Only allow player's move when it's their turn and on player's side
             box = self.game._player_boxes[id_box]
@@ -51,20 +55,25 @@ class GameGUI:
                 self.update_buttons()
                 self.check_game_over()
 
-                # stop the game if the player wins
-                if self.game.is_game_over:
-                    return
+                # Enable "Let AI move" button after player's move
+                self.current_turn = "ai"
+                self.ai_move_button.config(state=tk.NORMAL)
 
-                self.current_turn = "ai"  # Switch to AI's turn
-                self.game.move_ai()  # AI makes its move
-                print("ai move => ", id_box)
-                self.update_buttons()
-                self.check_game_over()
+    def on_ai_move_button_click(self):
+        if self.current_turn == "ai":
+            AI_best_move = self.game.get_ai_move()
+            self.game.move(side=0, id_box=AI_best_move)  # AI makes its move
+            print("ai move => ", AI_best_move)
+            self.update_buttons()
+            self.check_game_over()
 
-                self.current_turn = "player"  # Switch back to player's turn
-                self.nb_turn += 1
-                print("---")
-                print("turn no: ", self.nb_turn)
+            self.current_turn = "player"  # Switch back to player's turn
+            self.nb_turn += 1
+            print("---")
+            print("turn no: ", self.nb_turn)
+
+            # Disable "Let AI move" button after AI's move
+            self.ai_move_button.config(state=tk.DISABLED)
 
     def update_buttons(self):
         for side in range(2):
