@@ -51,6 +51,10 @@ class GameGUI:
                 self.update_buttons()
                 self.check_game_over()
 
+                # stop the game if the player wins
+                if self.game.is_game_over:
+                    return
+
                 self.current_turn = "ai"  # Switch to AI's turn
                 self.game.move_ai()  # AI makes its move
                 print("ai move => ", id_box)
