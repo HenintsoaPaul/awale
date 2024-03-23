@@ -1,3 +1,4 @@
+from copy import deepcopy
 from Box import Box
 
 
@@ -7,18 +8,21 @@ class Game:
         self._ai_boxes = None
         self._player_boxes = None
 
+    def get_nb_boxes_per_side( self ) -> int:
+        return int( self._nb_boxes_per_side )
+
     def init( self ):
         ai_boxes = [ ]
         player_boxes = [ ]
         # set ids and degrees
         degree = 0
-        for i in range( self._nb_boxes_per_side ):
-            if (i + 1) >= (self._nb_boxes_per_side / 2):
+        for i in range( self.get_nb_boxes_per_side() ):
+            if (i + 1) >= (self.get_nb_boxes_per_side() / 2):
                 degree = 1
             ai_boxes.append( Box( i, degree ) )
             player_boxes.append( Box( i, degree ) )
         # set game direction
-        for i in range( self._nb_boxes_per_side - 1 ):
+        for i in range( self.get_nb_boxes_per_side() - 1 ):
             ai_boxes[ i ].set_next( ai_boxes[ i + 1 ] )
             player_boxes[ i ].set_next( player_boxes[ i + 1 ] )
         ai_boxes[ len( ai_boxes ) - 1 ].set_next( ai_boxes[ 0 ] )
@@ -27,14 +31,14 @@ class Game:
         self._ai_boxes = ai_boxes
         self._player_boxes = player_boxes
 
-    def clone(self):
+    def clone( self ):
         clone = Game()
-        clone._ai_boxes = self._ai_boxes.copy()
-        clone._player_boxes = self._player_boxes.copy()
+        clone._ai_boxes = deepcopy( self._ai_boxes )
+        clone._player_boxes = deepcopy( self._player_boxes )
         return clone
 
     def game_over( self ) -> bool:
-        for i in range( self._nb_boxes_per_side ):
+        for i in range( self.get_nb_boxes_per_side() ):
             if self._ai_boxes[ i ].get_item() != 0 or self._player_boxes[ i ].get_item() != 0:
                 return False
         return True
@@ -61,7 +65,7 @@ class Game:
 
         # get item on the enemy side
         if box.get_degree() == 0:
-            id_box_opponent_to_be_taken = (self._nb_boxes_per_side / 2) - 1 - box.get_id_box()
+            id_box_opponent_to_be_taken = int((self.get_nb_boxes_per_side() / 2) - 1 - box.get_id_box())
             box_opponent_to_be_taken = opponent_boxes[ id_box_opponent_to_be_taken ]
             if box_opponent_to_be_taken.get_item() > 0:
                 #  - RECURSIVE CALL - 
@@ -71,13 +75,13 @@ class Game:
 
             else:
                 isFirstLineNull = True
-                for i in range( self._nb_boxes_per_side / 2 ):
+                for i in range( int(self.get_nb_boxes_per_side() / 2) ):
                     if opponent_boxes[ i ].get_item() != 0:
                         isFirstLineNull = False
                         break
 
                 if isFirstLineNull:
-                    id_box_opponent_to_be_taken = self._nb_boxes_per_side - 2 + box.get_id_box()
+                    id_box_opponent_to_be_taken = int(self.get_nb_boxes_per_side() - 2 + box.get_id_box())
                     box_opponent_to_be_taken = opponent_boxes[ id_box_opponent_to_be_taken ]
                     if box_opponent_to_be_taken.get_item() > 0:
                         #  - RECURSIVE CALL - 
@@ -92,7 +96,7 @@ class Game:
 
         if toMaximize:  # AI's turn
             best_score = float( '-inf' )
-            for i in range( self._nb_boxes_per_side ):
+            for i in range( self.get_nb_boxes_per_side() ):
                 if self._ai_boxes[ i ].get_item() > 0:
                     # clone the Game, then perform the test on the clone 
                     clone = self.clone()
@@ -103,23 +107,24 @@ class Game:
             return best_score
         else:  # Player's turn
             best_score = float( 'inf' )
-            for i in range( self._nb_boxes_per_side ):
+            for i in range( self.get_nb_boxes_per_side() ):
                 if self._player_boxes[ i ].get_item() > 0:
                     # clone the Game, then perform the test on the clone 
                     clone = self.clone()
                     clone.move(side, i)
-                    score = clone.minimax(0, depth - 1, True)
+                    score = clone.minimax(0, depth - 1, False)
                     best_score = min(best_score, score)
 
             return best_score
 
     def evaluate( self, side: int ):
         boxes = self._ai_boxes
+        remaining_items = 0
         if side == 1:
             boxes = self._player_boxes
-        for i in range( self._nb_boxes_per_side ):
-            remaining_items = boxes[ i ].get_item()
-        return remaining_items - (self._nb_boxes_per_side * 2)
+        for i in range( self.get_nb_boxes_per_side() ):
+            remaining_items += boxes[ i ].get_item()
+        return remaining_items - (self.get_nb_boxes_per_side() * 2)
 
     # returns the best move for the AI
     def get_ai_move( self ) -> int:
@@ -127,9 +132,16 @@ class Game:
         max_score = float( '-inf' )
         id_best_box = 0
         # explore all possible moves and get best move
-        for i in range(self._nb_boxes_per_side): 
+        for i in range(self.get_nb_boxes_per_side()): 
+            clone = self.clone()
+            clone.move( side=0, id_box=i )
             score = self.minimax( 0, depth, True )
             if score > max_score:
                 max_score = score
                 id_best_box = i
         return id_best_box
+    
+    # AI plays its best move
+    def move_ai( self ):
+        id_best_box = self.get_ai_move()
+        self.move( side=0, id_box=id_best_box )
