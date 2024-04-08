@@ -20,6 +20,11 @@ class Game:
 
     def get_nb_boxes_per_side( self ) -> int:
         return int( self._nb_boxes_per_side )
+    
+    def get_box( self, side: int, id_box: int ) -> Box:
+        if side == 0:
+            return self._ai_boxes[ id_box ]
+        return self._player_boxes[ id_box ]
 
     def init( self ):
         ai_boxes = [ ]
