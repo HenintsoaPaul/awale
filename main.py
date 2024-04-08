@@ -1,8 +1,11 @@
 from Game import Game
+from GameGUI import GameGUI
 
+def main():
+    game = Game()
+    game.init()
+    gui = GameGUI(game)
+    gui.run()
 
-game = Game()
-game.init()
-
-while not game.is_game_over:
-    print ("best move:" + str(game.get_ai_move()))
+if __name__ == "__main__":
+    main()
